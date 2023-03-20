@@ -15,7 +15,7 @@ class PedidosController extends Controller
      */
     public function index()
     {
-        $pedidos = Pedidos::get();
+        $pedidos = Pedidos::with("cliente")->get();
         return response()->json($pedidos);
     }
 

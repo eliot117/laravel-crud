@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Clientes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Pedidos extends Model
 {
@@ -12,4 +13,9 @@ class Pedidos extends Model
     protected $table = "pedidos";
 
     protected $fillable = ["cliente_id", "codigo", "fecha"];
+
+    public function cliente()
+    {
+        return $this->belongsTo(Clientes::class, "cliente_id");
+    }
 }
