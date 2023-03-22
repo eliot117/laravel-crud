@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\Pedidos;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\PedidosItems;
 
 class PedidosController extends Controller
 {
@@ -15,7 +17,7 @@ class PedidosController extends Controller
      */
     public function index()
     {
-        $pedidos = Pedidos::with("cliente")->get();
+        $pedidos = Pedidos::with(["cliente", "pedidosItems", "pedidosItems.articulos"])->get();
         return response()->json($pedidos);
     }
 
@@ -37,7 +39,16 @@ class PedidosController extends Controller
      */
     public function store(Request $request)
     {
+        DB::beginTransaction();
         $pedidos = Pedidos::create($request->all());
+
+        $pedidosItems = PedidosItems::create([
+            'pedido_id' => $pedidos->id,
+            'articulo_id' => $request->articulo_id,
+            'cantidad' => $request->cantidad,
+        ]);
+
+        DB::commit();
         return response()->json($pedidos);
     }
 
@@ -49,7 +60,7 @@ class PedidosController extends Controller
      */
     public function show($id)
     {
-        $pedidos = Pedidos::findOrFail($id);
+        $pedidos = Pedidos::with("pedidosItems")->where('id',$id)->first();
         return response()->json($pedidos);
     }
 
@@ -73,8 +84,15 @@ class PedidosController extends Controller
      */
     public function update(Request $request, $id)
     {
+        DB::beginTransaction();
         $pedidos = Pedidos::findOrFail($id);
         $pedidos->update($request->all());
+        $pedidos->pedidosItems()->update([
+            'pedido_id' => $pedidos->id,
+            'articulo_id' => $request->articulo_id,
+            'cantidad' => $request->cantidad,
+        ]);
+        DB::commit();
         return response()->json($pedidos);
     }
 
